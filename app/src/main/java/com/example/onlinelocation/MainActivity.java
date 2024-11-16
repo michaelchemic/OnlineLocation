@@ -2,14 +2,19 @@ package com.example.onlinelocation;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
@@ -35,9 +40,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
+
 public class MainActivity extends AppCompatActivity implements AMapLocationListener,LocationSource,AMap.OnMyLocationChangeListener{
     //请求权限码
     private static final int REQUEST_PERMISSIONS = 9527;
+    private static final int REQUEST_CODE_BACKGROUND_LOCATION = 1001;
+    private static final int REQUEST_CODE_FINE_LOCATION = 1002;
+
+
     //声明AMapLocationClient类对象
     public AMapLocationClient mLocationClient = null;
     //声明AMapLocationClientOption对象
@@ -69,6 +79,12 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         startButton = findViewById(R.id.button1);
         stopButton = findViewById(R.id.button2);
         HelpButton = findViewById(R.id.button3);
+        //引导用户手动授予后台定位权限
+//        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//        intent.setData(Uri.fromParts("package", getPackageName(), null));
+//        startActivity(intent);
+
+
         //初始化位置
         initLocation();
         //开始录制轨迹
@@ -186,14 +202,33 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
      * 检查Android版本
      */
     private void checkingAndroidVersion() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            //Android6.0及以上先获取权限再定位
-            requestPermission();
-
-        }else {
-            //Android6.0以下直接定位
-             mLocationClient.startLocation();
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+//            //Android6.0及以上先获取权限再定位
+//            requestPermission();
+//
+//        }else {
+//            //Android6.0以下直接定位
+//             mLocationClient.startLocation();
+//        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // 检查前台权限
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                // 前台权限已授予，申请后台权限
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                        REQUEST_CODE_BACKGROUND_LOCATION
+                );
+            } else {
+                // 请求前台权限
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_CODE_FINE_LOCATION
+                );
+            }
         }
+
     }
     /**
      * 动态请求权限
@@ -332,8 +367,9 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         }
     }
 
+
     //绘制轨迹
-    protected void plotTrajectory() {
+    public void plotTrajectory() {
         // 绘制轨迹
         PolylineOptions polylineOptions = new PolylineOptions()
                 .addAll(trackList)
