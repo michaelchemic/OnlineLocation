@@ -1,5 +1,6 @@
 package com.example.onlinelocation;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
 
     private boolean isRecording = false;
     private Button startButton, stopButton;
-
+    private Button HelpButton;
     private static final int REQUEST_CODE_CREATE_FILE = 1; // 文件选择请求码
 
     @Override
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         //按钮初始化
         startButton = findViewById(R.id.button1);
         stopButton = findViewById(R.id.button2);
+        HelpButton = findViewById(R.id.button3);
         //初始化位置
         initLocation();
         //开始录制轨迹
@@ -79,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         checkingAndroidVersion();
 
     }
+
+
 
     //开始轨迹录制
     private void startRecording() {
